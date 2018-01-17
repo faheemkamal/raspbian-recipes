@@ -23,22 +23,20 @@ ssid="rpi-wifi"
 psk="edithpiaf"
 
 
+sudo killall wpa_supplicant &> /dev/null
+sudo rfkill unblock wlan &> /dev/null
+sleep 2
 
 
 sudo brctl addbr br0
-sudo brctl addif br0 wlan0 eth1
+sudo brctl addif br0 eth1
 
 echo -e "#static IP configuration
 
 interface br0
-static ip_address=192.168.2.1/24" > /etc/dhcpcd.conf
+static ip_address=192.168.2.1/24
+static routers= 192.168.2.0" > /etc/dhcpcd.conf
 sudo systemctl restart dhcpcd
-
-
-
-sudo killall wpa_supplicant &> /dev/null
-sudo rfkill unblock wlan &> /dev/null
-sleep 2
 
 sudo iptables -F
 sudo iptables -t nat -F
@@ -48,18 +46,12 @@ sudo iptables -A FORWARD -i $br -o $eth -j ACCEPT
 
 sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
-sudo ip route del 0/0 dev $br &> /dev/null
-a=`route | awk "/${eth}/"'{print $5+1;exit}'`
-sudo route add -net default gw $ip_address netmask 0.0.0.0 dev $br metric $a
-
 echo -e "interface=$br \n\
 bind-interfaces \n\
-server=8.8.8.8 \n\
 domain-needed \n\
 bogus-priv \n\
+dhcp-option=6,8.8.8.8,8.8.4.4 \n\
 dhcp-range=$dhcp_range_start,$dhcp_range_end,$dhcp_time" > /etc/dnsmasq.conf
-
-sudo systemctl restart dnsmasq
 
 echo -e "interface=$wlan\n\
 driver=nl80211\n\
@@ -75,7 +67,9 @@ ignore_broadcast_ssid=0\n\
 wpa=2\n\
 wpa_key_mgmt=WPA-PSK\n\
 wpa_passphrase=$psk\n\
-rsn_pairwise=CCMP" > /etc/hostapd/hostapd.conf
+rsn_pairwise=CCMP
+bridge=br0" > /etc/hostapd/hostapd.conf
 
 sudo systemctl stop hostapd
 sudo hostapd /etc/hostapd/hostapd.conf &
+sudo systemctl restart dnsmasq
