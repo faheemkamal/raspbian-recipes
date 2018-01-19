@@ -38,14 +38,19 @@ static ip_address=192.168.2.1/24
 static routers= 192.168.2.0" > /etc/dhcpcd.conf
 sudo systemctl restart dhcpcd
 
-sudo iptables -F
-sudo iptables -t nat -F
-sudo iptables -t mangle -F
-sudo iptables -X
-sudo iptables -t nat -X
-sudo iptables -t mangle -X
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
 sudo iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
-# sudo iptables -t nat -A POSTROUTING -o $eth -j MASQUERADE  
+# sudo iptables -t nat -A POSTROUTING -o $eth -j MASQUERADE
+
 # sudo iptables -A FORWARD -i $eth -o $br -m state --state RELATED,ESTABLISHED -j ACCEPT  
 # sudo iptables -A FORWARD -i $br -o $eth -j ACCEPT
 sudo service iptables save
