@@ -40,11 +40,18 @@ sudo systemctl restart dhcpcd
 
 sudo iptables -F
 sudo iptables -t nat -F
-sudo iptables -t nat -A POSTROUTING -o $eth -j MASQUERADE  
-sudo iptables -A FORWARD -i $eth -o $br -m state --state RELATED,ESTABLISHED -j ACCEPT  
-sudo iptables -A FORWARD -i $br -o $eth -j ACCEPT 
+sudo iptables -t mangle -F
+sudo iptables -X
+sudo iptables -t nat -X
+sudo iptables -t mangle -X
+sudo iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
+# sudo iptables -t nat -A POSTROUTING -o $eth -j MASQUERADE  
+# sudo iptables -A FORWARD -i $eth -o $br -m state --state RELATED,ESTABLISHED -j ACCEPT  
+# sudo iptables -A FORWARD -i $br -o $eth -j ACCEPT
+sudo service iptables save
+sudo service iptables restart 
 
-sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+sudo sysctl net.ipv4.ip_forward=1
 
 echo "interface=$br \n\
 bind-interfaces \n\
