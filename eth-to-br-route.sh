@@ -31,7 +31,7 @@ sleep 2
 sudo brctl addbr br0
 sudo brctl addif br0 eth1
 
-echo -e "#static IP configuration
+echo "#static IP configuration
 
 interface br0
 static ip_address=192.168.2.1/24
@@ -46,14 +46,14 @@ sudo iptables -A FORWARD -i $br -o $eth -j ACCEPT
 
 sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
-echo -e "interface=$br \n\
+echo "interface=$br \n\
 bind-interfaces \n\
 domain-needed \n\
 bogus-priv \n\
 dhcp-option=6,8.8.8.8,8.8.4.4 \n\
 dhcp-range=$dhcp_range_start,$dhcp_range_end,$dhcp_time" > /etc/dnsmasq.conf
 
-echo -e "interface=$wlan\n\
+echo "interface=$wlan\n\
 driver=nl80211\n\
 ssid=$ssid\n\
 hw_mode=g\n\
